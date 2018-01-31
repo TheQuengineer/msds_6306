@@ -10,7 +10,7 @@ Below is a list of files and their purpose in the repo.
 
 ### college_recent_grads
 
-Is a dataset provided by the `fivethirtyeight` repo on (github)[https://github.com/rudeboybert/fivethirtyeight]
+Is a dataset provided by the `fivethirtyeight` repo on [github](https://github.com/rudeboybert/fivethirtyeight)
 we looked specifically at the recent college graduate data to answer the first
 few questions.
 
@@ -25,4 +25,4 @@ The html web version of the question and answer file.
 
 ### swirls15.txt
 
-The final exercise output of the swirls challenge number fifteen. 
+The final exercise output of the swirls challenge number fifteen.
