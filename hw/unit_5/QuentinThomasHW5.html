@@ -307,7 +307,30 @@ sum(final$Total)</code></pre>
 <div id="c.-the-client-is-expecting-a-girl-omit-boys-and-give-the-top-10-most-popular-girls-names." class="section level4">
 <h4>c. The client is expecting a girl! Omit boys and give the top 10 most popular girl’s names.</h4>
 <pre class="r"><code>results &lt;- final[order(final$Total, decreasing = TRUE),]
-top_ten &lt;- head(results[which(results$Gender.x == &quot;F&quot; &amp; results$Gender.y == &quot;F&quot;),], n = 10)</code></pre>
+top_ten &lt;- head(results[which(results$Gender.x == &quot;F&quot; &amp; results$Gender.y == &quot;F&quot;),], n = 10)
+top_ten</code></pre>
+<pre><code>##            Name Gender.x AmountOfChildrenWithName.x Gender.y
+## 9820       Emma        F                      20415        F
+## 23607    Olivia        F                      19638        F
+## 27782    Sophia        F                      17381        F
+## 3725        Ava        F                      16340        F
+## 12698  Isabella        F                      15574        F
+## 21722       Mia        F                      14871        F
+## 6509  Charlotte        F                      11381        F
+## 302     Abigail        F                      12371        F
+## 9799      Emily        F                      11766        F
+## 11838    Harper        F                      10283        F
+##       AmountOfChildrenWithName.y Total
+## 9820                       19414 39829
+## 23607                      19246 38884
+## 27782                      16070 33451
+## 3725                       16237 32577
+## 12698                      14722 30296
+## 21722                      14366 29237
+## 6509                       13030 24411
+## 302                        11699 24070
+## 9799                       10926 22692
+## 11838                      10733 21016</code></pre>
 <p>10 Most popular Girl Names</p>
 <table>
 <thead>
@@ -379,7 +402,7 @@ top_ten &lt;- head(results[which(results$Gender.x == &quot;F&quot; &amp; results
 <div id="section-3" class="section level3">
 <h3>4.)</h3>
 <p>Push at minimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week). The Codebook should contain a short definition of each object you create, and if creating multiple files, which file it is contained in. You are welcome and encouraged to add other files-just make sure you have a description and directions that are helpful for the grader.</p>
-<p>Codebook for the HW can be found <a href="http://www.google.com">here</a></p>
+<p>Codebook for the HW can be found <a href="https://github.com/TheQuengineer/msds_6306/tree/master/hw/unit_5">here</a></p>
 </div>
 </div>
 

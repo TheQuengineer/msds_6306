@@ -17,4 +17,5 @@ This file contains all the top ten girl names in 2015 and 2016. This data set wa
 top girl names contain the following columns
 
 `Name:` The Name that was the most common in 2015 & 2016
+
 `Total:` The total number of people with that specific name in both years
