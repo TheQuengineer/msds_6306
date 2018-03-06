@@ -1,0 +1,75 @@
+---
+title: "Unit9HW"
+author: "Quentin Thomas"
+date: "3/5/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## MSDS 6306 Preparing Data
+
+### Questions
+
+1. **Harry Potter Casts**
+
+
+`a.` In the IMDB, there are listings of full cast members for movies. Navigate to [link](http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1). Feel free to View Source to get a good idea of what the page looks
+like in the code.
+
+`b.` Scrape the page with any R package that makes things easy for you. Of particular interest is the table of the Cast in order of
+crediting. Please scrape this table (You might have to fish it out of several of the tables from the page) and make it a data.frame() of the Cast in your R environment.
+
+```{r}
+library(rvest)
+
+page_data <- read_html(x = "http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1")
+page_table <- html_node(page_data, xpath = "/html/body/div[1]/div/div[4]/div[3]/div[1]/div[1]/div[2]/table[3]")
+casts <- html_table(page_table)
+casts
+```
+
+`c.` clean up the table
+
+- It should not have blank observations or rows, a row that should be column names, or just '...'
+
+```{r}
+library(stringr)
+casts <- casts[, c(2,4)]
+casts <- casts[-1,]
+casts$X4 <- str_replace_all(casts$X4, "[\r\n]" , "")
+```
+
+- It should have intuitive column names (ideally 2 to start - Actor and Character)
+```{r}
+names(casts) <- c("Actor", "Character")
+```
+
+- In the film, Mr Warwick plays two characters which makes his row look a little weird. Please replace his character column with just
+"Griphook/Professor Filius Flitwick" to make it look better
+
+```{r}
+casts[grepl(pattern = "^Warwick", casts$Actor),]$Character <- "Griphook/Professor Filius Flitwick"
+```
+
+- One row might result in "Rest of cast listed alphabetically" - remove this observation.
+
+```{r}
+casts[!c(casts$Actor == "Rest of cast listed alphabetically:"),]
+casts[!c(casts$Character == "Rest of cast listed alphabetically:"),]
+```
+
+`d.` Split the Actor's name into two columns: FirstName and Surname. Keep in mind that some actors/actresses have middle names as well. Please make sure that the middle names are in the FirstName column, in addition to the first name(example: given the Actor Frank Jeffrey Stevenson, the Firstname column would say "Frank Jeffrey.")
+
+
+```{r}
+#split_names <- str_split(casts$Actor, pattern = " (?=[^ ]+$)")
+#nrow(split_names)
+#d <- data.frame(matrix(unlist(split_names), nrow=150, byrow=T),stringsAsFactors=FALSE)
+#names(d) <- c("Firstname","Surname")
+#cbind(d$Firstname, casts)
+#casts
+```
+
