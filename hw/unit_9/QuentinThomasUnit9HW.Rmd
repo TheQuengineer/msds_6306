@@ -65,6 +65,7 @@ casts
 
 
 ```{r}
+#Need to split off the last names from the rest of the names so that it will also include middle names if they have it.
 split_names <- str_split(casts$Actor, pattern = " (?=[^ ]+$)")
 d <- data.frame(matrix(unlist(split_names), nrow=149, byrow=T),stringsAsFactors=FALSE)
 names(d) <- c("FirstName","Surname")
@@ -86,6 +87,7 @@ head(casts, 10)
 `b.` Scrape the page with any R package that makes things easy for you. There are a few tables on the page, so make sure you are targeting specifically the Shooting
 statistics table.
 ```{r}
+#scraping all the data!
 espn_data <- read_html(x = "http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs")
 espn_table <- html_node(espn_data, css ="#my-players-table > div.mod-container.mod-table > div:nth-child(3) > table")
 shooting_stats <- html_table(espn_table)
@@ -97,7 +99,14 @@ shooting_stats
 names, or the Totals row in the table as observations.
 
 ```{r}
-
+#Remove SHooting Stats CSS nonsense that is cluttering up my dataframe
+shooting_stats <- shooting_stats[-1,]
+#Replacing the label generic x labels with the actual header values as the column names
+colnames(shooting_stats) <-as.character(unlist(shooting_stats[1,]))
+shooting_stats <- shooting_stats[-1,]
+#Removing totals row
+shooting_stats <- shooting_stats[-nrow(shooting_stats),]
+shooting_stats
 ```
 
 
@@ -105,15 +114,55 @@ names, or the Totals row in the table as observations.
 two columns, one with Name and the other Position.
 
 ```{r}
+names_and_pos <- str_split(shooting_stats$PLAYER, ", ")
+df <-  data.frame(matrix(unlist(names_and_pos), nrow=17, byrow=T),stringsAsFactors=FALSE)
+names(df) <- c("Player", "Position")
+df
+stats <- shooting_stats[, c(2:15)]
+sa_playerstats <- cbind(df, stats)
+sa_playerstats
 ```
 
 - Check the data type of all columns. convert relevant columns to numeric. Check the data type of all columns again to confirm that they have changed!
 
+Data types of relevant columns BEFORE conversion.
 ```{r}
+sapply(sa_playerstats, mode)
+```
+
+
+Data types of relevant columns After conversion
+
+```{r}
+stats <- as.data.frame(sapply(sa_playerstats[,c(3:16)], as.numeric))
+sa_playerstats <- cbind(df, stats)
+sapply(sa_playerstats, mode)
 ```
 
 `d.` Create a colorful bar chart that shows the Field Goals Percentage per game for each person. It will be graded on the following criteria.
+
 - Informative Title, centered
 - Relevant x and y axis labels (not simply variables names!)
 - Human-readable axes with no overlap(you might have to flip x and y to fix that)
 - Color the columns by the team member's position (so, all PF's should have the same color, etc.)
+
+```{r}
+library(ggplot2)
+
+sports_theme <- theme(plot.title = element_text(face = "bold.italic",
+                                                size= 14,
+                                                color = "black"),
+                      axis.text.x = element_text(size = 8, face = "bold.italic"),
+                      axis.text.y = element_text(face = "bold.italic"),
+                      axis.title.x = element_text(face= "bold", color = "black", size = 14),
+                      axis.title.y = element_text(face="bold", color = "black", size = 14),
+                      legend.position = "Top")
+
+ggplot(data = sa_playerstats, aes(x = Player, y = `FG%`, fill = Position)) +
+  geom_bar(stat = "identity", position = position_stack(reverse = TRUE)) +
+  coord_flip() +
+  labs(title = "San Antonio Spurs Field Goal Percentage 2017-2018") +
+  sports_theme
+
+
+```
