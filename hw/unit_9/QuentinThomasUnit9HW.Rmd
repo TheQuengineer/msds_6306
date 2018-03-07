@@ -155,8 +155,7 @@ sports_theme <- theme(plot.title = element_text(face = "bold.italic",
                       axis.text.x = element_text(size = 8, face = "bold.italic"),
                       axis.text.y = element_text(face = "bold.italic"),
                       axis.title.x = element_text(face= "bold", color = "black", size = 14),
-                      axis.title.y = element_text(face="bold", color = "black", size = 14),
-                      legend.position = "Top")
+                      axis.title.y = element_text(face="bold", color = "black", size = 14))
 
 ggplot(data = sa_playerstats, aes(x = Player, y = `FG%`, fill = Position)) +
   geom_bar(stat = "identity", position = position_stack(reverse = TRUE)) +
