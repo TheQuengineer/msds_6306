@@ -70,3 +70,69 @@ ggplot(data = va_counts_by_state, aes(x= State, y =NumberOfLocations, fill= Stat
 **2.** **Cleaning and Bringing in New Features**
 
 **`a.`** This graph (1D) might be somewhat misleading, as bigger states may have more hospitals, but could be more sparsely located. Read statesize.csv into your R environment. This contains essentially a vector of square miles for each state. In trying to merge it with your data.frame() from 1C, you find that they don't match. Use `paste()` on your LST column in 1C to see what the matter is, and write what you observe in a comment
+
+`Comment`
+
+Each state has a large space after its listing. For example california is listed as `CA     ` and georgia is listed as `GA     `. This shows there are at least two spaces after each state abbreviation. In addition there are two states in the dataset `HI` which is Hawaii and `AK` which is Alaska. We are only interested in the mainland of the us so this also will cause a problem with merging our dataset.
+
+```{r}
+statesize <- read.csv("statesize.csv")
+paste(va_counts_by_state$State)
+paste(statesize$Abbrev)
+```
+
+**`b.`**
+Correct the problem with the LST column using any method in R that is programmatic and easily understandable. Once you have made these state abbreviations identical to statesize.csv’s Abbrev column, merge the data.frame() from 1C and statesize.csv in order to add size information.
+
+```{r}
+#Removing Spaces
+va_counts_by_state$State <- str_trim(va_counts_by_state$State)
+#Removing Row 2 & 11 from statesize Alaska and Hawaii
+statesize <- statesize[-c(2,11),]
+
+state_info <- merge(va_counts_by_state, statesize, by.x="State", by.y="Abbrev")
+```
+
+**`c.`**
+Calculate a new variable in your combined data.frame() which indicates the VA hospitals per thousand square miles.
+
+```{r}
+per_thousand <- state_info$NumberOfLocations / (state_info$SqMiles / 1000)
+state_info[, 6] <- per_thousand
+names(state_info)[6] <- "VAper1000SqMiles"
+head(state_info)
+```
+
+**`d.`**
+
+Create another ggplot which considers the VAs per square thousand miles, rather than just frequency.
+
+
+```{r}
+
+state_theme <- theme(plot.title = element_text(face = "bold",
+                                               size = 18,
+                                               color = "black",
+                                               hjust = 0.5),
+                     axis.text.x = element_text(size = 5),
+                     axis.title.x = element_text(face = "bold.italic", color = "black", size = 18),
+                     axis.title.y = element_text(face ="bold.italic", color = "black", size = 18))
+
+ggplot(data = state_info, aes(x= reorder(State, -VAper1000SqMiles), y = VAper1000SqMiles , fill= Region)) +
+  geom_bar(stat = "identity") +
+  scale_fill_brewer(palette="Spectral") +
+  labs(title = "Veteran Hospital Locations",
+       x= "States",
+       y="Number of Centers" ,
+       subtitle= "Per Square Thousand Miles",
+       caption="US MAINLAND ONLY") +
+  state_theme
+
+```
+
+
+**`e.`**
+What patterns do you see? By this metric, is there any region that seems relatively high for VA medical centers per thousand square miles? How about low? Given these data, what advice might you give your boss before you start modeling (and why)?
+
+After viewing the chart above we can see that the Northeastern part of the United states have more VA centers per thousand square miles than any of the other regions in the country. This indicates that if you are a veteran it is a good idea to be located in this region as there will be many more centers to choose from. From this chart we can also see that `Rhode Island` has the most centers per 1000 square miles while `Montana` is on the other end of the spectrum. The Western Region however, is a different story. There are not that many centers per thousand square miles which indicates that there are not that many hospitals for veterans to go to in western states. Using this data I would use the western region as a place to start modeling as this region of the United States looks well under served in comparison to all the other regions.
+
