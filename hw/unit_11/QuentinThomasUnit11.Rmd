@@ -1,0 +1,145 @@
+---
+title: "Unit11"
+author: "Quentin Thomas"
+date: "4/2/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Time Series
+
+### Brief Financial Data
+
+`a.`
+Natively in R, you have access to sample data sets of prominent stocks over time. We'll be using `EuStockMarkets` for this question. Type `help(EuStockMarkets)` to learn more. From these data, pull specifically the DAX index. For all questions in this assignment, you're welcome to normalize (or don't) how you see fit, but, if you choose to, please document what you're doing and why for the grader. It's not neccessary for the purpose of this assignment.
+
+```{r}
+help(EuStockMarkets)
+dax <- EuStockMarkets[,1]
+```
+
+`b.`
+These are annual European Stock Data from 1990 onward. Create a rudimentary plot of the data. Make the line blue. Give an informative title. Lable the axes accurately. In 1997, an event happend you want to indicate; add a vertical red line to your plot which divides pre-1997 and post- 1997 information.
+
+```{r}
+plot(dax, type="l", col="blue", main="DAX Market From 1991 to 1998", xlab="YEAR", ylab="DAX VALUE")
+abline(v=1997, col="red")
+```
+
+`c.`
+Decompose the time series into its components(ie, trend, seasonality, random). Keep in mind that this is a multiplicative model you want. Create a plot of all decomposed components. As before, make all lines blue and have a vertical divider at the year 1997.
+
+```{r}
+dax_decompose <- decompose(dax, type="multiplicative")
+
+par(mfrow=c(3,1))
+plot(dax_decompose$trend, type="l", col="blue", main = "DAX Trend From 1991 to 1998", xlab="YEAR", ylab="DAX VALUE")
+abline(v=1997, col="red")
+plot(dax_decompose$seasonal, type="l", col="blue", main = "DAX Seasonal From 1990 to 1997", xlab="YEAR", ylab="DAX VALUE")
+abline(v=1997, col="red")
+plot(dax_decompose$random, type="l", col="blue", main = "DAX Random From 1990 to 1997", xlab="YEAR", ylab="DAX VALUE")
+abline(v=1997, col="red")
+
+```
+
+### Temperature Data
+
+`a.` 
+Using the maxtemp dataset granted by loading fpp2, there are maximum annual temperature data in Celsius. For more information, use `help(maxtemp)`. To see what you're looking at, execute the command in Examples in the help document.
+
+```{r}
+library(fpp2)
+?maxtemp
+autoplot(maxtemp)
+```
+
+`b.`
+We are only concerned with information after 1990. Please elminate information or subset information we care about.
+```{r}
+library(stats)
+recent_maxtemp <- window(maxtemp, 1990)
+```
+
+`c.`
+Utilize SES to predict the next five years of maximum temperatures in Melbourne. Plot this information, including the prior information and the forecast. Add the predicted value line across 1990-present as a separate line, preferably blue. So, to review, you should have your fit, the predicted value line overlaying it, and a forecast through 2021, all on one axis. Find the AICc of this fitted model. You will use that infomration later.
+
+```{r}
+forecasts_maxtemp <- ses(recent_maxtemp, h=5)
+plot(forecasts_maxtemp, main="Temperature Forecast from Present to 2021",
+     xlab= "YEAR", ylab= "Temperature (Celsius)")
+lines(fitted(forecasts_maxtemp), col="blue")
+lines(forecasts_maxtemp$mean, col="blue", type="o")
+```
+
+`d.`
+Now use a damped Holt's linear trend to also predict out five years. Make sure initial="optimal" As above, create a similar plot to 1C, but use the Holt fit instead.
+
+```{r}
+holtfit_maxtemp <- holt(recent_maxtemp, initial="optimal", h=5, damped=TRUE)
+
+plot(holtfit_maxtemp, main="Temperature Forecasts & Comparison", xlab="YEAR", ylab="Temperature (Celsius)")
+lines(fitted(holtfit_maxtemp), col="blue", type ="o")
+lines(holtfit_maxtemp$mean, col="red")
+```
+
+
+`e.`
+Compare the AICc of the ses() and holt() models. Which model is better here?
+
+I would have to say that holt() model is better as it follows the trend line which makes it much easier to forecast out for 5 years. It looks like the ses() plot is more conservative and the line does not increase with time. In fact, it flatlines which makes for a very conservative prediction which makes it seem like there wont be that much change to take into account. I would go with the holt model if given the choice.
+
+
+### The Wands Choose The Wizard
+
+`a.`
+Utilize the dygraphs library. Read in both Unit11Timeserise_Ollivander and Gregorovitch.csv as two different data frames. They do not have headers, so make sure you account for that. This is a time series of wands sold over years.
+
+
+```{r}
+library(dygraphs)
+ollivander <- read.csv('Unit11TimeSeries_Ollivander.csv', header = FALSE)
+gregorovitch <- read.csv('Unit11TimeSeries_Gregorovitch.csv', header = FALSE)
+```
+
+`b.`
+You don't have information in the proper format! In both data sets, you'll need to convert the date like variable to an actual Date class.
+```{r}
+library(zoo)
+ollivander[,1] <- as.Date(ollivander$V1, "%m/%d/%Y")
+gregorovitch[,1] <- as.Date(gregorovitch$V1, "%m/%d/%Y")
+```
+`c.`
+Use the xts library and the xts() function in it to make each a dataframe an xts object (effectively a time series object) You'll want to order.by Date variable.
+```{r}
+library(xts)
+ollivander <- xts(ollivander, order.by = ollivander$V1)
+gregorovitch <- xts(gregorovitch, order.by = gregorovitch$V1)
+names(ollivander) <- c("OllivanderDates", "OllivanderWands")
+names(gregorovitch) <- c("GregorovitchDate", "GregorovitchWands")
+```
+
+`d.`
+Bind the two xts objects together and create a dygraph from it. Utilize the help() index if you're stuck.
+
+- Give an effective title and x/y axes.
+- Label each Series (via dySeries) to be the appropriate wand-maker. So, one line should create a label for Ollivander and the other for Gregorovitch.
+- Stack this graph and modify the two lines to be different colors (and not the default ones!) Any colors are fine, but make sure they're visible and that Ollivander is a different color than Gregorovitch.
+- Activate a range selector and make it big enough to view.
+- Use dyShading to illuminate approximately when Voldemort was revived and at-large: btween 1995 to 1999.
+- Enable Highlighting on the graph, so mousing over a line bolds it.
+
+```{r}
+library(dygraphs)
+df <- merge.xts(gregorovitch, ollivander)
+
+dygraph(df, main="Wands Choose The Wizard", ylab="Wands", xlab="Year")%>%
+  dyRangeSelector(dateWindow = c("1970-01-01", "2017-01-01")) %>%
+  dyShading(from="1995-01-01", to="1999-01-01", color="grey")%>%
+  dySeries("OllivanderWands", drawPoints = TRUE, color="purple")%>%
+  dySeries("GregorovitchWands", drawPoints = TRUE, color="orange")%>%
+  dyHighlight()
+
+```
